@@ -9,17 +9,12 @@
 >Le réseau utilisé pour le TP est 192.168.10.0/24 
 >Adresse IP PC1 : 192.168.10.21
 >Adresse IP PC2 : 192.168.10.20
+>Adresse IP Manager 1 : 192.168.10.41
+>Adresse IP Manager 2 : 192.168.10.31
+>Adresse IP Manager 3 : 192.168.10.32
+>Adresse IP Worker 1 : 192.168.10.42
+>Adresse IP Worker 2 : 192.168.10.33
 
-```mermaid
-graph LR
-A[PC1] -- 192.168.10.41 --> B[Coreos Manager]
-A -- 192.168.10.42 --> C[Coreos Worker]
-
-D[PC2] -- 192.168.10.31 --> E[Coreos Manager]
-D -- 192.168.10.32 --> F[Coreos Manager]
-D -- 192.168.10.33 --> G[Coreos Worker]
-D -- 192.168.10.100 --> H[Centos]
-```
 # Configuration du Vagrantfile :
 
 ## Changement de la variable pour 5 machines
@@ -72,7 +67,8 @@ Taper dans un manager cette commande ```docker swarm join-token worker``` et sui
 Il nous était trop long de récupérer les images sur tout les nœuds, nous avons donc monté un registre.
 Pour créer un registre : ```docker service create --name registry --publish published=5000,target=5000 registry:2``` 
 
-Vérifier que le registre fonctionne : ```curl 127.0.0.1:5000```. Le résultat doit être **{}**. Dans notre cas, la requête affichait bien les accolades vides.
+Vérifier que le registre fonctionne : ```curl 127.0.0.1:5000```. 
+Le résultat doit être **{}**. Dans notre cas, la requête affichait bien les accolades vides.
 
 Savoir où tourne le registre : ```docker service ps registry```
 
@@ -98,8 +94,11 @@ Utiliser un conteneur *Docker Weave* :
 Pour contourner le problème de password pour les copies de ceph, on est passé par l'appli web de nginx pour y mettre le dossier compressé tar.gz de ceph pour qu'on puisse le télécharger sur les autres machines :
 
 ```docker run -d -p 8081:80 -v $(pwd):/usr/share/nginx/html nginx``` *Pour lancer un conteneur web.*
+
 ```curl -SLO 192.168.10.41:8081/ceph.tar.gz``` *Récupérer le dossier*
+
 ```tar xvzf ceph.tar.gz``` *Permet de décompresser le dossier*
+
 ```sudo mkdir /etc/ceph```
 ```sudo cp etc/ceph/* /etc/ceph/```
 
